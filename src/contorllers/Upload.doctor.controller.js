@@ -9,9 +9,9 @@ cloudinary.config({
     secure: true,
 });
 
-exports.uploadSingleDoctor = async (req, res) => {
+const uploadSingleDoctor = async (req, res) => {
     try {
-        const { name, specialization, experience, qualifications, bio } = req.body;
+        const { name, education, experience, about, location, department } = req.body;
         if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
         console.log("[DEBUG] File received:", req.file.originalname);
@@ -38,10 +38,11 @@ exports.uploadSingleDoctor = async (req, res) => {
 
         const doctor = new Doctor({
             name,
-            specialization,
+            education,
             experience,
-            qualifications,
-            bio,
+            about,
+            location,
+            department,
             image: imageData,
         });
 
@@ -53,3 +54,23 @@ exports.uploadSingleDoctor = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+//get all doctors
+const getAllDoctors = async (req, res) => {
+    try {
+        const doctors = await Doctor.find();
+        res.status(200).json({
+            message: "Doctors fetched successfully",
+            doctors
+        })
+    } catch (error) {
+        console.error("[ERROR]", error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+module.exports = {
+    getAllDoctors,
+    uploadSingleDoctor
+}
