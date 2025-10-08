@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { uploadSingleDoctor, getAllDoctors } = require("../contorllers/Upload.doctor.controller.js");
+const { uploadSingleDoctor, getDoctors } = require("../contorllers/Upload.doctor.controller.js");
 // const { getAllDoctors } = require("../contorllers/Upload.doctor.controller.js");
 const router = express.Router();
 
@@ -10,7 +10,7 @@ const upload = multer({ storage });
 
 // Single image route
 router.post("/add/doctor", upload.single("image"), uploadSingleDoctor);
-router.get("/doctors", getAllDoctors);
+router.get("/doctors", getDoctors);
 
 
 module.exports = router;

@@ -14,8 +14,20 @@ const uploadSingleDoctor = async (req, res) => {
         const { name, education, experience, about, location, department } = req.body;
         if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-        console.log("[DEBUG] File received:", req.file.originalname);
+        // 🔍 Check for duplicate
+        const existingDoctor = await Doctor.findOne({
+            name: new RegExp(`^${name}$`, "i"),
+            location: new RegExp(`^${location}$`, "i"),
+            department: new RegExp(`^${department}$`, "i")
+        });
 
+        if (existingDoctor) {
+            return res.status(409).json({
+                message: "Doctor with same name, location, and department already exists",
+            });
+        }
+
+        // 🩺 Proceed with Cloudinary upload
         const result = await new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 { folder: "doctors" },
@@ -27,11 +39,7 @@ const uploadSingleDoctor = async (req, res) => {
             streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
         });
 
-        console.log("[DEBUG] Cloudinary upload done:", result.secure_url);
-
         const imageData = {
-            originalname: req.file.originalname,
-            title: req.file.originalname,
             url: result.secure_url,
             public_id: result.public_id,
         };
@@ -47,30 +55,48 @@ const uploadSingleDoctor = async (req, res) => {
         });
 
         await doctor.save();
-        res.status(201).json({ message: "Doctor created successfully", doctor });
+        return res.status(201).json({ message: "Doctor created successfully", doctor });
 
     } catch (err) {
         console.error("[ERROR]", err);
-        res.status(500).json({ error: err.message });
+        if (err.code === 11000) {
+            return res.status(409).json({ message: "Duplicate doctor entry detected" });
+        } else {
+            return res.status(500).json({ error: err.message });
+        }
     }
 };
 
+
 //get all doctors
-const getAllDoctors = async (req, res) => {
+const getDoctors = async (req, res) => {
     try {
-        const doctors = await Doctor.find();
-        res.status(200).json({
-            message: "Doctors fetched successfully",
-            doctors
+        const { location } = req.query
+        if (!location) {
+            const doctors = await Doctor.find();
+            return res.status(200).json({
+                message: "Doctors fetched successfully",
+                doctors
+            })
+        }
+
+        const doctorsByLocation = await Doctor.find({
+            location: { $regex: new RegExp(location, "i") }
         })
+
+        return res.status(200).json({
+            message: `${location}doctors fetched sucessfully`,
+            doctors: doctorsByLocation
+        })
+
     } catch (error) {
         console.error("[ERROR]", error);
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 }
 
 
 module.exports = {
-    getAllDoctors,
+    getDoctors,
     uploadSingleDoctor
 }

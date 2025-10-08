@@ -1,40 +1,41 @@
-
 const mongoose = require("mongoose");
+
 const doctorSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: [true, "Doctor name is required"],
+        trim: true,
     },
     education: {
-        // there education backgroud like  what are the qualifications they have eg: MBBS, MD, etc.
         type: String,
-        required: true
+        required: [true, "Education details are required"],
+        trim: true,
     },
     experience: {
         type: String,
-        required: true
+        required: [true, "Experience is required"],
     },
-    // qualifications: {
-    //     type: [String],
-    //     required: true
-    // },
     about: {
         type: String,
-        required: true
+        required: [true, "About field is required"],
     },
     location: {
         type: String,
-        required: true
+        required: [true, "Location is required"],
+        trim: true,
     },
     department: {
         type: String,
-        required: true
+        required: [true, "Department is required"],
+        trim: true,
     },
-
     image: {
-        url: { type: String, required: true }, // Cloudinary URL
-        public_id: { type: String, required: true }, // for deletion
+        url: { type: String, required: true },
+        public_id: { type: String, required: true },
     },
 }, { timestamps: true });
+
+// Prevent duplicate doctors in same location + department
+doctorSchema.index({ name: 1, location: 1, department: 1 }, { unique: true });
 
 module.exports = mongoose.model("Doctor", doctorSchema);
