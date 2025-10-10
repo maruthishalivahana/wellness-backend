@@ -27,7 +27,6 @@ const uploadSingleDoctor = async (req, res) => {
             });
         }
 
-        // 🩺 Proceed with Cloudinary upload
         const result = await new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 { folder: "doctors" },
