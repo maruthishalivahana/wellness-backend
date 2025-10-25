@@ -42,7 +42,10 @@ const loginAdmin = async (req, res) => {
             maxAge: 3600000
         });
 
-        res.json({ message: "Logged in successfully" });
+        res.json({
+            message: "Logged in successfully",
+            admin: { id: admin._id, username: admin.username, email: admin.email }
+        });
     } catch (err) {
         res.status(500).json({ message: "Login error", error: err.message });
     }
