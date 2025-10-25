@@ -11,10 +11,14 @@ cloudinary.config({
 
 const uploadSingleDoctor = async (req, res) => {
     try {
+        // Admin guard (defense in depth)
+        if (!req.user || req.user.role !== "admin") {
+            return res.status(403).json({ message: "Forbidden: Admins only" });
+        }
+
         const { name, education, experience, about, location, department } = req.body;
         if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-        // 🔍 Check for duplicate
         const existingDoctor = await Doctor.findOne({
             name: new RegExp(`^${name}$`, "i"),
             location: new RegExp(`^${location}$`, "i"),
